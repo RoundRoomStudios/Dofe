@@ -19,10 +19,12 @@
 #define LOCA_TAG              0x61636F6C
 
 #define GLYF_TAG              0x66796C67
+#define GLYF_ON_CURVE         0x01
 #define GLYF_X_SHORT          0x02
 #define GLYF_Y_SHORT          0x04
 #define GLYF_X_SAME_SHORT_POS 0x10
 #define GLYF_Y_SAME_SHORT_POS 0x20
+#define GLYF_LAST_POINT       0x80
 
 #define GDEF_TAG              0x46454447
 
@@ -692,6 +694,105 @@ static TTF_CharsAndGlyphs* readTableGLYF(FILE* file, TTF_Tables* tables, TTF_Sim
     return charAndGlyph;
 }
 
+static TTF_CharsAndGlyphs* processPoints(TTF_CharsAndGlyphs* charAndGlyph) { // Error TAG: ttf  | proc
+    // Turns 2 off points into a off-on-off point line
+    TTF_CharToGlyph*    charToGlyph = charAndGlyph->charToGlyph;
+    TTF_GlyphPointList* glyphPoints = charAndGlyph->glyphPoints;
+    uint32_t pointAmount = glyphPoints->pointAmount;
+    TTF_GlyphPoint* points = glyphPoints->points;
+
+    // Count off line point pairs
+    uint32_t pairs = 0;
+    uint8_t flag, prevflag = 0;
+    for (uint32_t i = 0; i < pointAmount; i++) {
+        flag = points[i].flag;
+        if (i == 0) {prevflag = flag; continue;}
+
+        // Check if current point counts
+        if (prevflag & GLYF_LAST_POINT) {prevflag = flag; continue;}
+
+        // Check
+        if (!(GLYF_ON_CURVE & flag) && !(GLYF_ON_CURVE & prevflag)) {
+            pairs++;
+        }
+
+        // Next point
+        prevflag = flag;
+    }
+
+    // Allocate new list for points
+    uint32_t glyphPointsSize = sizeof(TTF_GlyphPointList) + sizeof(TTF_GlyphPoint) * (pointAmount + pairs);
+    TTF_GlyphPointList* newGlyphPoints;
+    if (!(newGlyphPoints = allocate(glyphPointsSize, "ttf  | proc", "glyphPoints"))) return NULL;
+    newGlyphPoints->pointAmount = (pointAmount + pairs);
+
+    // Allocate new list for original indexes
+    uint32_t* indexes;
+    if (!(indexes = allocate(charToGlyph->characterAmount * sizeof(indexes), "ttf  | proc", "indexes"))) return NULL;
+
+    // Fill index list
+    for (uint16_t i = 0; i < charToGlyph->characterAmount; i++) {
+        indexes[i] = charToGlyph->characters[i].index;
+    }
+
+    // Fill new list using similar loop
+    uint32_t realI = 0;
+    for (uint32_t i = 0; i < pointAmount; i++) {
+        // Fill in original point
+        newGlyphPoints->points[realI].x    = points[i].x;
+        newGlyphPoints->points[realI].y    = points[i].y;
+        newGlyphPoints->points[realI].flag = points[i].flag;
+        realI++;
+
+        // Rest of loop as normal
+        flag = points[i].flag;
+        if (i == 0) {prevflag = flag; continue;}
+
+        // Check if current point counts
+        if (prevflag & GLYF_LAST_POINT) {prevflag = flag; continue;}
+
+        // Now Add A point
+        if (!(GLYF_ON_CURVE & flag) && !(GLYF_ON_CURVE & prevflag)) {
+            // Swap points
+            newGlyphPoints->points[realI].x    = newGlyphPoints->points[realI - 1].x;
+            newGlyphPoints->points[realI].y    = newGlyphPoints->points[realI - 1].y;
+            newGlyphPoints->points[realI].flag = newGlyphPoints->points[realI - 1].flag;
+
+            // Add point inbetween
+            newGlyphPoints->points[realI - 1].x = (points[i - 1].x + points[i].x) / 2;
+            newGlyphPoints->points[realI - 1].y = (points[i - 1].y + points[i].y) / 2;
+            newGlyphPoints->points[realI - 1].flag = GLYF_ON_CURVE;
+            realI++;
+
+            // Update charToGlyph TODO make more efficient
+            for (uint16_t j = 0; j < charToGlyph->characterAmount; j++) {
+                if (indexes[j] > i) {
+                    charToGlyph->characters[j].index++;
+                }
+            }
+            printf("i: %i | %i\n", i, realI);
+        }
+
+        // Next point
+        prevflag = flag;
+
+    }
+
+    // Make bezier curves look better HACK
+    for (uint32_t i = 0; i < newGlyphPoints->pointAmount; i++) {
+        if (!(newGlyphPoints->points[i].flag & GLYF_ON_CURVE)) {
+            newGlyphPoints->points[i].x = ((newGlyphPoints->points[i-1].x + newGlyphPoints->points[i].x) / 2 + (newGlyphPoints->points[i+1].x + newGlyphPoints->points[i].x) / 2) / 2;
+            newGlyphPoints->points[i].y = ((newGlyphPoints->points[i-1].y + newGlyphPoints->points[i].y) / 2 + (newGlyphPoints->points[i+1].y + newGlyphPoints->points[i].y) / 2) / 2;
+        }
+    }
+
+    // Final things
+    free(glyphPoints);
+    free(indexes);
+    charAndGlyph->glyphPoints = newGlyphPoints;
+    return charAndGlyph;
+}
+
 void* loadFileTTF(char* fileName, char* include) { // Error TAG: ttf
     FILE* file = fopen(fileName, "rb");
 
@@ -718,6 +819,9 @@ void* loadFileTTF(char* fileName, char* include) { // Error TAG: ttf
     if (indexToGlyph == NULL) return NULL;
 
     TTF_CharsAndGlyphs* charAndGlyph = readTableGLYF(file, tables, charMap, indexToGlyph, include);
+    if (charAndGlyph == NULL) return NULL;
+
+    charAndGlyph = processPoints(charAndGlyph);
     if (charAndGlyph == NULL) return NULL;
 
     //HACK test code

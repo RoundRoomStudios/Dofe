@@ -1,14 +1,14 @@
 #include "src/src.h"
 
 int main(int argc, char* argv[]) {
-    printf("%i\n", sizeof(TTF_GlyphPoint));
+    printf("confirm printing\n");
     SDL_Init(SDL_INIT_VIDEO);
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-    TTF_CharsAndGlyphs* charAndGlyph = loadFileTTF("cour.ttf", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .,!?'\"-:;()\\/_+=*&|<>[]{}#~%^@£$");
+    TTF_CharsAndGlyphs* charAndGlyph = loadFileTTF("cour.ttf", "A"/*"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .,!?'\"-:;()\\/_+=*&|<>[]{}#~%^@£$"*/);
 
     IronWindow* window = createWindow("Test");
     if (window == NULL) return 111;

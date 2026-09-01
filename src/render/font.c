@@ -29,7 +29,7 @@ bool renderFont(TTF_CharsAndGlyphs* charAndGlyph) { // Error TAG: rend | font
     TTF_GlyphPointList* glyphPoints = charAndGlyph->glyphPoints;
 
     // Scan data for letter "A"
-    uint16_t iOfA = 0;
+    uint16_t iOfA = 0xFFFF;
     for (uint16_t i = 0; i < charToGlyph->characterAmount; i++) {
         if (charToGlyph->characters[i].codepoint == 0x41) {
             iOfA = i;
@@ -38,8 +38,8 @@ bool renderFont(TTF_CharsAndGlyphs* charAndGlyph) { // Error TAG: rend | font
     }
 
     // Stop if no "A"
-    if (iOfA == 0) {
-        printf("rend | font | Letter A not found");
+    if (iOfA == 0xFFFF) {
+        printf("rend | font | Letter A not found\n");
     }
 
     // Get data about "A"
