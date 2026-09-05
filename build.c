@@ -8,7 +8,7 @@ int main(int argc, char* argv[]) {
             " src/render/window.c"
             " src/render/font.c"
             " glad/src/gl.c -Iglad/include -lSDL3 -lGL"
-            " -o main"
+            " -o main -g"
             " && ./main"
             " ; echo $?"
         );

@@ -46,9 +46,9 @@ bool renderFont(TTF_CharsAndGlyphs* charAndGlyph) { // Error TAG: rend | font
     uint32_t indexOfA = charToGlyph->characters[iOfA].index;
     uint32_t i = indexOfA;
     while (i < glyphPoints->pointAmount) {
-        i++;
         if (glyphPoints->points[i].flag & 0x80)
             break;
+        i++;
     }
     uint32_t pointAmount = (i - indexOfA + 1);
 
@@ -95,6 +95,11 @@ bool renderFont(TTF_CharsAndGlyphs* charAndGlyph) { // Error TAG: rend | font
     glDrawArrays(GL_LINE_LOOP, 0, pointAmount);
 
     // Cleanup
+    glDeleteBuffers(1, &vbo);
+    glDeleteVertexArrays(1, &vao);
+    glDeleteShader(vertShader);
+    glDeleteShader(fragShader);
+    glDeleteProgram(program);
 
     // Errors
     GLenum error;

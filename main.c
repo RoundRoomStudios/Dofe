@@ -16,6 +16,7 @@ int main(int argc, char* argv[]) {
     // HACK quit window
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
+    SDL_GL_SetSwapInterval(1);
     bool running = true;
     while (running) {
         SDL_Event event;
