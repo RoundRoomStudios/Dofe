@@ -8,10 +8,11 @@ int main(int argc, char* argv[]) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-    TTF_CharsAndGlyphs* charAndGlyph = loadFileTTF("cour.ttf", "A"/*"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .,!?'\"-:;()\\/_+=*&|<>[]{}#~%^@£$"*/);
-
     IronWindow* window = createWindow("Test");
     if (window == NULL) return 111;
+
+    // Load font
+    loadFilePCF("unifont.pcf", U"a");
 
     // HACK quit window
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -27,13 +28,11 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        renderFont(charAndGlyph);
-
         SDL_GL_SwapWindow(window->window);
     }
 
     // TODO cleanup everything for code simplicity
     // Cleanup
-    deleteWindow(window);
+    //deleteWindow(window);
     return 0;
 }

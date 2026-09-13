@@ -4,5 +4,6 @@
 
 #include "window.h"
 #include "font.h"
+#include "image.h"
 
 #endif
