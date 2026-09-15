@@ -1,0 +1,9 @@
+#ifndef IRON_RENDER_BASIC
+
+#define IRON_RENDER_BASIC
+
+#define INDEX_VAO_SCREEN_SIZE  0
+#define INDEX_SSBO_FONT_GRID_1 1
+#define INDEX_SSBO_FONT_GRID_2 2
+
+#endif

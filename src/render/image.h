@@ -3,6 +3,7 @@
 #define IRON_RENDER_IMAGE
 
 typedef struct ImageAtlasPackedImages {
+    uint32_t size;
     uint32_t options;
     /*
     amount of sizes indexed (n&0xFF)

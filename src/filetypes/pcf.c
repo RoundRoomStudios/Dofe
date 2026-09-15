@@ -441,10 +441,11 @@ static PCF_CharacterAtlas readBitmapsPCF(FILE* file, PCF_Tables* tables, PCF_Met
     PCF_AtlasInfo info = getAtlasInfo(metrics, encoding);
 
     // atlas allocation and basic creation
-    uint32_t atlasSize = info.size;
+    uint32_t atlasSize = info.size + sizeof(uint32_t); // size variable
     ImageAtlasPackedImages* atlas = allocate(atlasSize, "pcf  | bitm", "atlas");
     if (atlas == NULL) return nullAtlas;
     atlas->options = info.options;
+    atlas->size = info.size;
 
     // set bytes to 0
     for (uint32_t i = 0; i < info.size - sizeof(uint32_t); i++)
@@ -559,7 +560,7 @@ static PCF_CharacterAtlas readBitmapsPCF(FILE* file, PCF_Tables* tables, PCF_Met
     pushBufferBits(&writer);
 
     //HACK render letter 8*16
-    uint16_t bit = encoding->encodings[0].bit;
+    /*uint16_t bit = encoding->encodings[0].bit;
     for (uint16_t i = 0; i < 128; i++) {
         int byte = (i + bit - 1) / 8;
         int bitN = (i + bit - 1) % 8;
@@ -572,7 +573,7 @@ static PCF_CharacterAtlas readBitmapsPCF(FILE* file, PCF_Tables* tables, PCF_Met
         }
         if ((i%8)==7)
             printf("\n");
-    }
+    }*/
 
     //DEBUG
     /*for (uint32_t i = 0; i < info.size - sizeof(uint32_t); i++) {
@@ -580,7 +581,8 @@ static PCF_CharacterAtlas readBitmapsPCF(FILE* file, PCF_Tables* tables, PCF_Met
     }
     printf("\n%i\n", writer.byte);*/
 
-    return nullAtlas;
+    PCF_CharacterAtlas finalAtlas = {atlas, encoding};
+    return finalAtlas;
 }
 
 PCF_CharacterAtlas loadFilePCF(char* fileName, char32_t* include) { // Error TAG: pcf
@@ -597,8 +599,8 @@ PCF_CharacterAtlas loadFilePCF(char* fileName, char32_t* include) { // Error TAG
     PCF_MetricList* metrics = readMetricsPCF(file, tables, encoding);
     if (metrics == NULL) return nullAtlas;
 
-    PCF_CharacterAtlas bitmaps = readBitmapsPCF(file, tables, metrics, encoding);
-    if (bitmaps.images == NULL) return nullAtlas;
+    PCF_CharacterAtlas atlas = readBitmapsPCF(file, tables, metrics, encoding);
+    if (atlas.images == NULL) return nullAtlas;
 
     //cleanup
     free(tables);
@@ -621,5 +623,5 @@ PCF_CharacterAtlas loadFilePCF(char* fileName, char32_t* include) { // Error TAG
             printf("\n");
     }*/
 
-    return nullAtlas;//return bitmaps;
+    return atlas;
 }
