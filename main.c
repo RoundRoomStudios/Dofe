@@ -17,8 +17,10 @@ int main(int argc, char* argv[]) {
     if (window == NULL) return 111;
 
     // Load font a▩∞☕
-    PCF_CharacterAtlas atlas = loadFilePCF("unifont.pcf", U"☕▩");
-    RendererPCFGrid grid = setupPCFGrid(atlas, window, 2);
+    PCF_CharacterAtlas atlas = loadFilePCF("unifont.pcf", NULL);
+    RendererPCFGrid renderer = setupPCFGrid(atlas, window, 2);
+
+    setCharacters(&renderer, U"Hello, World! ☕\n¡Hola Mundo! ☔\n안녕하세요, 세상! ☄\n你好世界. ☙\nこんにちは世界! ☃\nlorem ipsum.", -1);
 
     // HACK quit window
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -34,7 +36,7 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        renderPCFGrid(&grid, window);
+        renderPCFGrid(&renderer, window);
 
         SDL_GL_SwapWindow(window->window);
     }

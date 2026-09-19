@@ -482,7 +482,7 @@ static PCF_CharacterAtlas readBitmapsPCF(FILE* file, PCF_Tables* tables, PCF_Met
         if (!seekFile(file, offset, SEEK_SET, "pcf  | bitm", "data of glyph")) return nullAtlas;
 
         // set bit index
-        encoding->encodings[i].bit = getBitPos(&writer)+1;
+        encoding->encodings[i].bit = getBitPos(&writer);
 
         // store size
         uint16_t width = metrics->metrics[i].rightSideBearing - metrics->metrics[i].leftSidedBearing;

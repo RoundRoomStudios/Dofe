@@ -73,11 +73,11 @@ void main() {
             i += (15-uint(float(coordInTri.y)/float(cellSize.y)*16.)) * 16;
             if (right)
                 i += 8;
-            data = getBit(offsets[instanceID]  + i);
+            data = getBit(offsets[instanceID]+i+1);
         } else {
             uint i = uint(float(coordInTri.x)/float(cellSize.x)*8.);
             i += (15-uint(float(coordInTri.y)/float(cellSize.y)*16.)) * 8;
-            data = getBit(offsets[instanceID]  + i);
+            data = getBit(offsets[instanceID]+i+1);
         }
     } else {
         // TODO make 1 size (usually ascii) work

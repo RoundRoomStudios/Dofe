@@ -154,8 +154,86 @@ RendererPCFGrid setupPCFGrid(PCF_CharacterAtlas atlas, IronWindow* window, uint1
     return renderer;
 }
 
+void resetCharacters(RendererPCFGrid* renderer, char32_t character) {
+    // search for character
+
+    uint32_t index = 0;
+    for (uint32_t i = 0; i < renderer->atlas.pointers->characterAmount; i++) {
+        if (renderer->atlas.pointers->encodings[i].codepoint == character) {
+            index = i;
+            break;
+        }
+    }
+
+    // fill offsets
+    for (uint16_t i = 0; i < renderer->grid->width * renderer->grid->height; i++) {
+        renderer->grid->offsets[i] = renderer->atlas.pointers->encodings[index].bit;
+    }
+}
+
+void setCharacters(RendererPCFGrid* renderer, char32_t* characters, int32_t length) {
+    // reset characters
+    resetCharacters(renderer, U' ');
+
+    // loop over characters
+    uint16_t row = 0;
+    uint16_t column = 0;
+
+    uint16_t i = 0;
+    while (characters[i] != 0 && (i < length || length == -1)) {
+        switch (characters[i]) {
+            // check for control characters
+            case U'\n':
+                column = 0;
+                row++;
+                break;
+            default:
+                // get index
+                uint32_t index = 0;
+                for (uint32_t j = 0; j < renderer->atlas.pointers->characterAmount; j++) {
+                    if (renderer->atlas.pointers->encodings[j].codepoint == characters[i]) {
+                        index = j;
+                        break;
+                    }
+                }
+
+                // read bit
+                uint32_t bit = renderer->atlas.pointers->encodings[index].bit;
+                uint8_t byte = renderer->atlas.images->bytes[bit/8];
+                bool isSmall = byte & (0x80 >> (bit%8));
+
+                // depends on if characters is small
+                if (isSmall) {
+                    uint16_t place = column + (renderer->grid->height - row - 1) * renderer->grid->width;
+                    renderer->grid->offsets[place] = bit;
+                    column++;
+                } else {
+                    // make even
+                    column += column % 2;
+                    uint16_t place = column + (renderer->grid->height - row - 1) * renderer->grid->width;
+                    renderer->grid->offsets[place] = bit;
+                    renderer->grid->offsets[place+1] = bit;
+                    column += 2;
+                }
+
+                if (column >= renderer->grid->width) {
+                    column = 0;
+                    row++;
+                }
+
+                break;
+        }
+        i++;
+    }
+}
+
 void renderPCFGrid(RendererPCFGrid* renderer, IronWindow* window) { // Error TAG: rend | pcf  | grid
     // TODO check if currently using this renderer
+
+    // add data
+    glNamedBufferData(renderer->offsetSSBO, renderer->grid->width * renderer->grid->height * sizeof(uint32_t) + sizeof(PCFGrid), renderer->grid, GL_DYNAMIC_DRAW);
+
+    // render
     uint32_t quadAmount = renderer->grid->width * renderer->grid->height;
     glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, quadAmount);
 

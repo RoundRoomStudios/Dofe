@@ -31,6 +31,8 @@ typedef struct RendererPCFGrid {
 
 RendererPCFGrid setupPCFGrid(PCF_CharacterAtlas atlas, IronWindow* window, uint16_t scale);
 
+void setCharacters(RendererPCFGrid* renderer, char32_t* characters, int32_t length);
+
 void renderPCFGrid(RendererPCFGrid* grid, IronWindow* window);
 
 #endif
