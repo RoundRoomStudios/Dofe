@@ -22,21 +22,31 @@ static inline bool tellFile(FILE* file, long* buffer, const char* errorType, con
     return true;
 }
 
-static inline bool readU8(uint8_t* buffer, size_t count, FILE* file, const char* errorType, const char* intName) {
+static inline bool readChar(uint8_t* buffer, size_t count, FILE* file, const char* errorType, const char* location) {
     // Helper fread with error checking
-    size_t size = fread(buffer, sizeof(uint8_t), count, file);
+    size_t size = fread(buffer, sizeof(char), count, file);
     if (size != count) {
-        printf("%s | File cuts off at %s.\n", errorType, intName);
+        printf("%s | File cuts off at %s.\n", errorType, location);
         return false;
     }
     return true;
 }
 
-static inline bool readU16(uint16_t* buffer, size_t count, FILE* file, const char* errorType, const char* intName, bool bswap) {
+static inline bool readU8(uint8_t* buffer, size_t count, FILE* file, const char* errorType, const char* location) {
+    // Helper fread with error checking
+    size_t size = fread(buffer, sizeof(uint8_t), count, file);
+    if (size != count) {
+        printf("%s | File cuts off at %s.\n", errorType, location);
+        return false;
+    }
+    return true;
+}
+
+static inline bool readU16(uint16_t* buffer, size_t count, FILE* file, const char* errorType, const char* location, bool bswap) {
     // Helper fread with error checking
     size_t size = fread(buffer, sizeof(uint16_t), count, file);
     if (size != count) {
-        printf("%s | File cuts off at %s.\n", errorType, intName);
+        printf("%s | File cuts off at %s.\n", errorType, location);
         return false;
     }
     if (bswap) {
@@ -47,11 +57,11 @@ static inline bool readU16(uint16_t* buffer, size_t count, FILE* file, const cha
     return true;
 }
 
-static inline bool readU32(uint32_t* buffer, size_t count, FILE* file, const char* errorType, const char* intName, bool bswap) {
+static inline bool readU32(uint32_t* buffer, size_t count, FILE* file, const char* errorType, const char* location, bool bswap) {
     // Helper fread with error checking
     size_t size = fread(buffer, sizeof(uint32_t), count, file);
     if (size != count) {
-        printf("%s | File cuts off at %s.\n", errorType, intName);
+        printf("%s | File cuts off at %s.\n", errorType, location);
         return false;
     }
     if (bswap) {
@@ -62,11 +72,11 @@ static inline bool readU32(uint32_t* buffer, size_t count, FILE* file, const cha
     return true;
 }
 
-static inline bool read16(int16_t* buffer, size_t count, FILE* file, const char* errorType, const char* intName, bool bswap) {
+static inline bool read16(int16_t* buffer, size_t count, FILE* file, const char* errorType, const char* location, bool bswap) {
     // Helper fread with error checking
     size_t size = fread(buffer, sizeof(int16_t), count, file);
     if (size != count) {
-        printf("%s | File cuts off at %s.\n", errorType, intName);
+        printf("%s | File cuts off at %s.\n", errorType, location);
         return false;
     }
     if (bswap) {

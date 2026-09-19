@@ -382,7 +382,7 @@ static PCF_AtlasInfo getAtlasInfo(PCF_MetricList* metrics, PCF_EncodingList* enc
 
     // final size calculation
     info.size = (bitsize & 0x7) ? bitsize / 8 + 1 : bitsize / 8;
-    info.size += sizeof(uint32_t); // for options
+    info.size += sizeof(uint32_t) * 2; // for options and size
 
     // DEBUG check info
     /*printf("Size: %i.\n", info.size);
@@ -441,7 +441,8 @@ static PCF_CharacterAtlas readBitmapsPCF(FILE* file, PCF_Tables* tables, PCF_Met
     PCF_AtlasInfo info = getAtlasInfo(metrics, encoding);
 
     // atlas allocation and basic creation
-    uint32_t atlasSize = info.size + sizeof(uint32_t); // size variable
+    uint32_t atlasSize = info.size; // size variable
+    atlasSize += sizeof(uint32_t) - atlasSize % sizeof(uint32_t); // round to uint32_t for shader
     ImageAtlasPackedImages* atlas = allocate(atlasSize, "pcf  | bitm", "atlas");
     if (atlas == NULL) return nullAtlas;
     atlas->options = info.options;

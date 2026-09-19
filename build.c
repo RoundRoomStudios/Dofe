@@ -5,6 +5,7 @@ int main(int argc, char* argv[]) {
         system(
             "gcc main.c"
             " src/filetypes/pcf.c"
+            " src/filetypes/txt.c"
             " src/render/window.c"
             " src/render/font.c"
             " glad/src/gl.c -Iglad/include -lSDL3 -lGL"

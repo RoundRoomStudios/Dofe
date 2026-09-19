@@ -11,27 +11,7 @@
 // SSBO 1: main data chunk of bitmaps
 // SSBO 2: padding, width, height, bit offsets
 
-GLuint currentGridOffsets; //GLuint offsetSSBO;
-
-const char* vertShaderSource =
-"#version 330 core\n"
-"void main() {\n"
-"    vec2 positions[4] = vec2[](\n"
-"       vec2(-1.0, -1.0),\n"
-"       vec2(1.0, -1.0),\n"
-"       vec2(1.0, 1.0),\n"
-"       vec2(-1.0, 1.0)\n"
-"    );\n"
-"    \n"
-"    gl_Position = vec4(positions[gl_VertexID], 0.0, 1.0);\n"
-"}\n";
-
-const char* fragShaderSource =
-"#version 330 core\n"
-"out vec4 FragColor;\n"
-"void main() {\n"
-"    FragColor = vec4(1.0);\n"
-"}\n";
+RendererPCFGrid currentGridRenderer; //GLuint offsetSSBO;
 
 static void printGLerrors() { // HACK
     GLenum err;
@@ -59,14 +39,25 @@ RendererPCFGrid setupPCFGrid(PCF_CharacterAtlas atlas, IronWindow* window, uint1
     RendererPCFGrid renderer;
     renderer.atlas = atlas;
 
+    // TODO dont at NULL when not needed TODO at txt.c
+    // vert file
+    TXT_File* vertShaderFile = loadFileTXT("./src/shaders/pcfGrid.vert");
+    const char* vertShaderText = vertShaderFile->text;
+    vertShaderFile->text[vertShaderFile->length] = 0x00;
+
     // vert shader
     GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertShader, 1, &vertShaderSource, NULL);
+    glShaderSource(vertShader, 1, &vertShaderText, NULL);
     glCompileShader(vertShader);
+
+    // frag file
+    TXT_File* fragShaderFile = loadFileTXT("./src/shaders/pcfGrid.frag");
+    const char* fragShaderText = fragShaderFile->text;
+    fragShaderFile->text[fragShaderFile->length] = 0x00;
 
     // frag shader
     GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragShader, 1, &fragShaderSource, NULL);
+    glShaderSource(fragShader, 1, &fragShaderText, NULL);
     glCompileShader(fragShader);
 
     // HACK
@@ -99,7 +90,6 @@ RendererPCFGrid setupPCFGrid(PCF_CharacterAtlas atlas, IronWindow* window, uint1
     SDL_GetWindowSize(window->window, &w, &h);
     uint16_t gridWidth  = (w / scale / 16) * 2;
     uint16_t gridHeight = h / scale / 16;
-
     // allocate grid
     uint32_t gridSize = sizeof(PCFGrid) + gridWidth * gridHeight * sizeof(uint32_t);
     PCFGrid* grid = allocate(gridSize, "set  | pcf  | grid", "grid of characters");
@@ -124,20 +114,27 @@ RendererPCFGrid setupPCFGrid(PCF_CharacterAtlas atlas, IronWindow* window, uint1
     glCreateBuffers(1, &offsetSSBO);
 
     // for checking current shader
-    currentGridOffsets = offsetSSBO;
+    currentGridRenderer = renderer;
 
     // buffer data
-    glNamedBufferData(bitmapSSBO, atlas.images->size, &atlas.images->options, GL_STATIC_DRAW);
+    glNamedBufferData(bitmapSSBO, atlas.images->size, atlas.images, GL_STATIC_DRAW);
     glNamedBufferData(offsetSSBO, grid->width * grid->height * sizeof(uint32_t) + sizeof(PCFGrid), grid, GL_DYNAMIC_DRAW);
 
     // bind buffers
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, SSBO_INDEX_FONT_GRID_1, bitmapSSBO);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, SSBO_INDEX_FONT_GRID_2, offsetSSBO);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, INDEX_SSBO_FONT_GRID_1, bitmapSSBO);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, INDEX_SSBO_FONT_GRID_2, offsetSSBO);
 
     // make VAO
     GLuint VAO;
     glCreateVertexArrays(1, &VAO); // or glGenVertexArrays + glBindVertexArray
     glBindVertexArray(VAO);
+
+    // screen dimensions into GPU
+    GLint location = glGetUniformLocation(program, "screenDim");
+    glProgramUniform2i(program, location, w, h);
+    int x, y;
+    SDL_GetWindowPosition(window->window, &x, &y);
+    glViewport(0, 0, w, h);
 
     //HACK
     printGLerrors(); // HACK

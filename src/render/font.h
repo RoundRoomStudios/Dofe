@@ -10,6 +10,7 @@
 #include "./window.h"
 
 #include "../filetypes/pcf.h"
+#include "../filetypes/txt.h"
 
 typedef struct PCFGrid {
     uint16_t width;

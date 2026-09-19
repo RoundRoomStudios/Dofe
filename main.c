@@ -1,5 +1,10 @@
 #include "src/src.h"
 
+// TODO used for things I need to do
+// BUG for bugs
+// HACK for things I "hacked" together
+// DEBUG for things that are only used when debugging
+
 int main(int argc, char* argv[]) {
     printf("confirm printing\n");
     SDL_Init(SDL_INIT_VIDEO);
@@ -11,9 +16,9 @@ int main(int argc, char* argv[]) {
     IronWindow* window = createWindow("Test");
     if (window == NULL) return 111;
 
-    // Load font
-    PCF_CharacterAtlas atlas = loadFilePCF("unifont.pcf", U"a");
-    RendererPCFGrid grid = setupPCFGrid(atlas, window, 1);
+    // Load font a▩∞☕
+    PCF_CharacterAtlas atlas = loadFilePCF("unifont.pcf", U"☕▩");
+    RendererPCFGrid grid = setupPCFGrid(atlas, window, 2);
 
     // HACK quit window
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
