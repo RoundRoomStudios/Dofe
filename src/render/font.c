@@ -188,6 +188,11 @@ void setCharacters(RendererPCFGrid* renderer, char32_t* characters, int32_t leng
                 row++;
                 break;
             default:
+                // stop overflowing
+                if (row >= renderer->grid->height) {
+                    break;
+                }
+
                 // get index
                 uint32_t index = 0;
                 for (uint32_t j = 0; j < renderer->atlas.pointers->characterAmount; j++) {
