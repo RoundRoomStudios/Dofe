@@ -1,7 +1,7 @@
 #include "txt.h"
 
 TXT_File* loadFileTXT(char* fileName) { // Error TAG: txt
-    // TODO add NULL at EOF TODO at font.c
+    // TODO add NULL at EOF
     FILE* file = fopen(fileName, "rb");
 
     // get file length
@@ -19,8 +19,11 @@ TXT_File* loadFileTXT(char* fileName) { // Error TAG: txt
     if (!seekFile(file, 0, SEEK_SET, "txt ", "start of file")) return NULL;
     if (!readChar(txtStore->text, fileLength, file, "txt ", "text")) return NULL;
 
-    //DEBUG
-    //printf("%s\n", txtStore->text);
+    //DEBUG || DEBUG_TXT
+    #if DEBUG
+    printf("\ntxt\n");
+    printf("%s\n", txtStore->text);
+    #endif
 
     // return
     return txtStore;

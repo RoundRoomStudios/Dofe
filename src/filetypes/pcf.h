@@ -13,7 +13,7 @@
 
 typedef struct PCF_Encoding {
     uint16_t codepoint;
-    uint32_t index;
+    uint16_t index;
     uint32_t bit;
 } PCF_Encoding;
 
@@ -32,8 +32,17 @@ typedef struct PCF_Metric {
     uint16_t characterAttrib;
 } PCF_Metric;
 
+typedef struct PCF_MetricCompressed {
+    uint8_t leftSidedBearing;
+    uint8_t rightSideBearing;
+    uint8_t characterWidth;
+    uint8_t characterAscent;
+    uint8_t characterDescent;
+} PCF_MetricCompressed;
+
 typedef struct PCF_MetricList {
-    PCF_Metric metrics[];
+    bool compressed;
+    uint8_t metrics[];
 } PCF_MetricList;
 
 typedef struct PCF_TableEntry {
@@ -48,17 +57,19 @@ typedef struct PCF_Tables {
     PCF_TableEntry  tables[];
 } PCF_Tables;
 
-typedef struct PCF_CharacterAtlas {
-    ImageAtlasPackedImages* images;
-    PCF_EncodingList* pointers;
-} PCF_CharacterAtlas;
-
 typedef struct PCF_AtlasInfo {
     uint32_t size;
     uint32_t options; //for atlas
     uint16_t sizeAmount;
-    uint16_t sizes[0xFF*2];
+    uint16_t w[0xFF];
+    uint16_t h[0xFF];
 } PCF_AtlasInfo;
+
+typedef struct PCF_CharacterAtlas {
+    PCF_EncodingList* encodings;
+    PCF_Metric*       metrics;
+    AtlasPI*          images;
+} PCF_CharacterAtlas;
 
 PCF_CharacterAtlas loadFilePCF(char* fileName, char32_t* include);
 
