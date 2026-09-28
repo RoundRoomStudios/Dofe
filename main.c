@@ -3,7 +3,6 @@
 // TODO used for things I need to do
 // BUG for bugs
 // HACK for things I "hacked" together
-// DEBUG for things that are only used when debugging
 
 int main(int argc, char* argv[]) {
     printf("confirm printing\n");
@@ -17,7 +16,8 @@ int main(int argc, char* argv[]) {
     if (window == NULL) return -1;
 
     // Load font a▩☕
-    PCF_CharacterAtlas atlas = loadFilePCF("unifont.pcf", U"a▩☕");
+    PCF_CharacterAtlas atlas = loadFilePCF("unifont.pcf", NULL);
+    gridFromPCF(&atlas, window, true, 0, 0, 1);
     if (atlas.images == NULL) {return -1;}
 
     // HACK quit window

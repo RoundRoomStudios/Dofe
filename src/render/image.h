@@ -2,6 +2,9 @@
 
 #define IRON_RENDER_IMAGE
 
+#include "window.h"
+#include "../basic.h"
+
 typedef struct AtlasPackedImages {
     uint32_t size;
     uint32_t options;
@@ -42,8 +45,50 @@ typedef struct AtlasPointers {
 } AtlasPointers;
 
 typedef struct AtlasPI {
-    AtlasPointer*      pointerList;
+    AtlasPointers*     pointerList;
     AtlasPackedImages* packedImages;
 } AtlasPI;
+
+typedef struct CellWideShift {
+    uint32_t index;
+    uint32_t shift;
+    uint16_t partX;
+    uint16_t partY;
+} CellWideShift;
+
+typedef struct WideShiftGrid {
+    uint16_t width;
+    uint16_t height;
+    uint16_t cellWidth;
+    uint16_t cellHeight;
+    uint16_t x;
+    uint16_t y;
+    CellWideShift cells[];
+} WideShiftGrid;
+
+typedef struct AtlasPIGrid {
+    AtlasPointers*     pointerList;
+    AtlasPackedImages* packedImages;
+    uint8_t            gridType; // 0 - Grid | 1 - Wide Grid | 2 - Shift Grid | 3 - Wide Shift Grid
+    void*              grid; // depends on gridtype
+} AtlasPIGrid;
+
+typedef struct AtlasPIGridRenderer {
+    // copied from AtlasPIGrid for no extra allocations
+    AtlasPointers*     pointerList;
+    AtlasPackedImages* packedImages;
+    uint8_t            gridType;
+    void*              grid;
+
+    // renderer specific
+    GLuint       program;
+    GLuint       bitmapSSBO;
+    GLuint       offsetSSBO;
+    GLuint       VAO; // unused but opengl requires it
+} AtlasPIGridRenderer;
+
+AtlasPIGrid atlasPIGridFrom(AtlasPI* atlas, IronWindow* window, bool shift, uint32_t width, uint32_t height, uint16_t scale);
+
+AtlasPIGridRenderer setupAtlasPIGridRenderer(AtlasPIGrid* atlasGrid, IronWindow* window);
 
 #endif

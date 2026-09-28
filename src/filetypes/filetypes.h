@@ -3,5 +3,6 @@
 #define IRON_FILETYPES
 
 #include "pcf.h"
+#include "txt.h"
 
 #endif

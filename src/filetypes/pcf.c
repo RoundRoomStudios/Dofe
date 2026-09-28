@@ -48,7 +48,7 @@ static PCF_Tables* readTableDirectory(FILE* file) { // Error TAG: pcf  | tdir
         if (!readU32(&tables->tables[i].offset, 1, file, "pcf  | tdir", "table entry offset", false)) return NULL;
     }
 
-    #if DEBUG || DEBUG_PCF || DEBUG_PCF_TDIR
+    #if DEBUG || DEBUG_PCF || DEBUG_PCF__TDIR
     printf("\npcf  | tdir\n");
     for (uint8_t i = 0; i < tableCount; i++) {
         switch (tables->tables[i].type) {
@@ -226,7 +226,7 @@ static PCF_EncodingList* readEncodingsPCF(FILE* file, PCF_Tables* tables, char32
         encodingList = readEncodingsPCFSome(file, minByte1, maxByte1, minByte2, maxByte2, bswap, defaultCharacter, include);
     }
 
-    #if DEBUG || DEBUG_PCF || DEBUG_PCF_ENCO
+    #if DEBUG || DEBUG_PCF || DEBUG_PCF__ENCO
     printf("\npcf  | enco\n");
     for (uint16_t i = 0; i < encodingList->characterAmount; i++) {
         if (printf("%lc: %i\n", encodingList->encodings[i].codepoint, encodingList->encodings[i].index) < 0)
@@ -320,7 +320,7 @@ static PCF_MetricList* readMetricsPCF(FILE* file, PCF_Tables* tables, PCF_Encodi
         metricList = readMetricsPCFFull(file, bswap, encoding);
     }
 
-    #if DEBUG || DEBUG_PCF || DEBUG_PCF_METR
+    #if DEBUG || DEBUG_PCF || DEBUG_PCF__METR
     printf("\npcf  | metr\n");
     if (metricList->compressed) {
         for (uint16_t i = 0; i < encoding->characterAmount; i++) {
@@ -431,8 +431,8 @@ static PCF_AtlasInfo getAtlasInfo(PCF_MetricList* metricList, PCF_EncodingList* 
 
     // set options
     info.options |= (uint8_t)info.sizeAmount;
-    info.options |= xBits << 16;
-    info.options |= yBits << 21;
+    info.options |= (xBits - 1) << 16;
+    info.options |= (yBits - 1) << 21;
 
     // set bitsize
     if (info.sizeAmount == 0)
@@ -444,13 +444,13 @@ static PCF_AtlasInfo getAtlasInfo(PCF_MetricList* metricList, PCF_EncodingList* 
     }
     info.size = bitSize / 8;
 
-    #if DEBUG || DEBUG_PCF || DEBUG_PCF_BITM || DEBUG_PCF_BITM_INFO
+    #if DEBUG || DEBUG_PCF || DEBUG_PCF__BITM || DEBUG_PCF__BITM_INFO
     printf("\npcf  | bitm | info\n");
     printf("Sizes: %i\n", info.sizeAmount);
     for (uint32_t i = 0; i < info.sizeAmount; i++) {
         printf("%i: (%i, %i)\n", i, info.w[i], info.h[i]);
     }
-    printf("Size in bits: %i\n\n", bitSize);
+    printf("Size in bits: %i\n-\n", bitSize);
     printf("Option sizes indexed:  %i\n", ( info.options        & 0xFF));
     printf("Option colors indexed: %i\n", ((info.options >> 8)  & 0xFF));
     printf("Option size of x:      %i\n", ((info.options >> 16) & 0x1F) + 1);
@@ -544,8 +544,8 @@ static bool readBitmapGlyph(FILE* file, uint32_t i, PCF_MetricList* metricList, 
         }
     }
 
-    #if DEBUG || DEBUG_PCF || DEBUG_PCF_BITM || DEBUG_PCF_BITM_GLYF
-    printf("\nDEBUG_PCF_BITM_GLYF unimplimented\n");
+    #if DEBUG || DEBUG_PCF || DEBUG_PCF__BITM || DEBUG_PCF__BITM_GLYF
+    printf("\nDEBUG_PCF__BITM_GLYF unimplimented\n");
     #endif
 
     return true;
@@ -593,8 +593,8 @@ static PCF_CharacterAtlas readBitmapsPCF(FILE* file, PCF_Tables* tables, PCF_Met
 
     // fill index
     if (info.sizeAmount) {
-        uint8_t sizeX = (info.options >> 16) & 0x1F;
-        uint8_t sizeY = (info.options >> 21) & 0x1F;
+        uint8_t sizeX = ((info.options >> 16) & 0x1F) + 1;
+        uint8_t sizeY = ((info.options >> 21) & 0x1F) + 1;
 
         // fill
         for (uint16_t i = 0; i < info.sizeAmount; i++) {
@@ -611,7 +611,7 @@ static PCF_CharacterAtlas readBitmapsPCF(FILE* file, PCF_Tables* tables, PCF_Met
 
     pushBufferBits(&writer);
 
-    #if DEBUG || DEBUG_PCF || DEBUG_PCF_BITM || DEBUG_PCF_BITM_MAIN
+    #if DEBUG || DEBUG_PCF || DEBUG_PCF__BITM || DEBUG_PCF__BITM_MAIN
     printf("\npcf  | bitm\n");
     for (uint32_t i = 0; i < encodingList->characterAmount; i++) {
         if (printf("%.4x %lc\n", i, encodingList->encodings[i].codepoint) < 0)
@@ -624,8 +624,8 @@ static PCF_CharacterAtlas readBitmapsPCF(FILE* file, PCF_Tables* tables, PCF_Met
         for (uint16_t j = 0; j < height; j++) {
             printf("    %.2x|", j);
             for (uint16_t k = 0; k < width; k++) {
-                uint64_t n = 0;
-                readBits(&r, &n, 1);
+                uint8_t n = 0;
+                readBitsU8(&r, &n, 1);
                 if (n) {
                     printf("█");
                 } else {
@@ -636,6 +636,27 @@ static PCF_CharacterAtlas readBitmapsPCF(FILE* file, PCF_Tables* tables, PCF_Met
         }
     }
     #endif
+
+    // make pointers
+    uint32_t pointersSize = sizeof(AtlasPointer) * encodingList->characterAmount + sizeof(AtlasPointers);
+    AtlasPointers* pointerList = allocate(pointersSize, "pcf  | bitm", "pointers to bitmap");
+    if (pointerList == NULL) return nullAtlas;
+    pointerList->pointerAmount = encodingList->characterAmount;
+
+    // fill pointers
+    for (uint32_t i = 0; i < encodingList->characterAmount; i++) {
+        pointerList->pointers[i].ID = encodingList->encodings[i].codepoint;
+        pointerList->pointers[i].index = encodingList->encodings[i].bit;
+    }
+
+    // allocate pointer structure
+    AtlasPI* atlas = allocate(sizeof(AtlasPI), "pcf  | bitm", "atlas reference");
+    if (atlas == NULL) return nullAtlas;
+    atlas->pointerList = pointerList;
+    atlas->packedImages = images;
+
+    PCF_CharacterAtlas charAtlas = {metricList, atlas};
+    return charAtlas;
 }
 
 PCF_CharacterAtlas loadFilePCF(char* fileName, char32_t* include) { // Error TAG: pcf
@@ -652,14 +673,20 @@ PCF_CharacterAtlas loadFilePCF(char* fileName, char32_t* include) { // Error TAG
     PCF_MetricList* metricList = readMetricsPCF(file, tables, encodingList);
     if (metricList == NULL) return nullAtlas;
 
-    // TODO refactor with new atlas and metrics
     PCF_CharacterAtlas atlas = readBitmapsPCF(file, tables, metricList, encodingList);
     if (atlas.images == NULL) return nullAtlas;
 
     //cleanup
-    //free(tables);
-    //free(metrics);
+    free(tables);
+    free(encodingList);
 
-    return nullAtlas;
-    //return atlas;
+    return atlas;
+}
+
+AtlasPIGrid gridFromPCF(PCF_CharacterAtlas* atlas, IronWindow* window, bool shift, uint32_t width, uint32_t height, uint16_t scale) { // pcf  | grid
+    // make grid
+    AtlasPIGrid grid = atlasPIGridFrom(atlas->images, window, shift, width, height, scale);
+    free(atlas->metrics);
+
+    return grid;
 }

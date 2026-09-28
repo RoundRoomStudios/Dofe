@@ -66,11 +66,12 @@ typedef struct PCF_AtlasInfo {
 } PCF_AtlasInfo;
 
 typedef struct PCF_CharacterAtlas {
-    PCF_EncodingList* encodings;
-    PCF_Metric*       metrics;
-    AtlasPI*          images;
+    PCF_MetricList* metrics;
+    AtlasPI*        images;
 } PCF_CharacterAtlas;
 
 PCF_CharacterAtlas loadFilePCF(char* fileName, char32_t* include);
+
+AtlasPIGrid gridFromPCF(PCF_CharacterAtlas* atlas, IronWindow* window, bool shift, uint32_t width, uint32_t height, uint16_t scale);
 
 #endif

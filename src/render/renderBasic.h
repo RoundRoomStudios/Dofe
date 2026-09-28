@@ -2,7 +2,7 @@
 
 #define IRON_RENDER_BASIC
 
-#define INDEX_SSBO_FONT_GRID_1 1
-#define INDEX_SSBO_FONT_GRID_2 2
+#define INDEX_SSBO_GRID_INDX 1
+#define INDEX_SSBO_GRID_IMGE 2
 
 #endif

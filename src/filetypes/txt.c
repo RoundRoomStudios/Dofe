@@ -1,7 +1,6 @@
 #include "txt.h"
 
-TXT_File* loadFileTXT(char* fileName) { // Error TAG: txt
-    // TODO add NULL at EOF
+TXT_File* loadFileTXT(char* fileName, bool appendNull) { // Error TAG: txt
     FILE* file = fopen(fileName, "rb");
 
     // get file length
@@ -10,14 +9,18 @@ TXT_File* loadFileTXT(char* fileName) { // Error TAG: txt
     if (!tellFile(file, &fileLength, "txt ", "end of file")) return NULL;
 
     // allocation
-    uint32_t storeSize = sizeof(TXT_File) + fileLength * sizeof(char);
+    uint32_t storeSize = sizeof(TXT_File) + fileLength * sizeof(char) + (uint32_t)appendNull;
     TXT_File* txtStore = allocate(storeSize, "txt ", "text file");
     if (txtStore == NULL) return NULL;
-    txtStore->length = fileLength;
+    txtStore->length = fileLength + (uint32_t)appendNull;
 
     // read file
     if (!seekFile(file, 0, SEEK_SET, "txt ", "start of file")) return NULL;
     if (!readChar(txtStore->text, fileLength, file, "txt ", "text")) return NULL;
+
+    // add NULL if needed
+    if (appendNull)
+        txtStore->text[fileLength] = 0x00;
 
     //DEBUG || DEBUG_TXT
     #if DEBUG

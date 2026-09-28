@@ -87,6 +87,4 @@ static inline bool read16(int16_t* buffer, size_t count, FILE* file, const char*
     return true;
 }
 
-static inline bool readList() {return true;} // TODO make this function
-
 #endif

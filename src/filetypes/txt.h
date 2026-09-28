@@ -13,6 +13,6 @@ typedef struct TXT_File {
     char     text[];
 } TXT_File;
 
-TXT_File* loadFileTXT(char* fileName);
+TXT_File* loadFileTXT(char* fileName, bool appendNull);
 
 #endif

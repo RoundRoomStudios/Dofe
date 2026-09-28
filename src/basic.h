@@ -5,16 +5,29 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define DEBUG true
-#define DEBUG_PCF false
-#define DEBUG_PCF_TDIR false
-#define DEBUG_PCF_METR false
-#define DEBUG_PCF_ENCO false
-#define DEBUG_PCF_BITM false
-#define DEBUG_PCF_BITM_MAIN false
-#define DEBUG_PCF_BITM_GLYF false
-#define DEBUG_PCF_BITM_INFO false
-#define DEBUG_TXT false
+#define DEBUG                false
+#define DEBUG_PCF            false
+#define DEBUG_PCF__TDIR      false
+#define DEBUG_PCF__METR      false
+#define DEBUG_PCF__ENCO      false
+#define DEBUG_PCF__BITM      false
+#define DEBUG_PCF__BITM_MAIN false
+#define DEBUG_PCF__BITM_GLYF false
+#define DEBUG_PCF__BITM_INFO false
+#define DEBUG_IMGE           false
+#define DEBUG_IMGE_GRID      false
+#define DEBUG_IMGE_GRID_PITR false
+#define DEBUG_IMGE_GRID_REND true
+#define DEBUG_TXT            false
+
+static inline uint32_t gcdU32 (uint32_t a, uint32_t b) { // Euclidian algorithm
+    if (a < b) {uint32_t t = a; a = b; b = t;} // switch to make a larger
+    while (true) {
+        if (a % b == 0) return b;
+        uint32_t t = b;
+        b = a % b; a = t;
+    }
+}
 
 static inline int8_t max8(int8_t a, int8_t b) {
     return a > b ? a : b;
@@ -163,7 +176,37 @@ typedef struct BitReader {
     uint64_t bit;
 } BitReader;
 
-static inline bool readBits(BitReader* r, uint64_t* buffer, int8_t amount) {
+static inline bool readBitsU8(BitReader* r, uint8_t* buffer, int8_t amount) {
+    while (amount > 0) {
+        uint8_t readAmount = minU8(amount, 8 - (r->bit % 8));
+        uint8_t mask = ((1 << readAmount) - 1) << (8 - (r->bit % 8) - readAmount);
+
+        *buffer <<= readAmount;
+        *buffer |= (r->bytes[r->bit / 8] & mask) >> (8 - (r->bit % 8) - readAmount);
+
+        amount -= readAmount;
+        r->bit += readAmount;
+    }
+
+    return true;
+}
+
+static inline bool readBitsU32(BitReader* r, uint32_t* buffer, int8_t amount) {
+    while (amount > 0) {
+        uint8_t readAmount = minU8(amount, 8 - (r->bit % 8));
+        uint8_t mask = ((1 << readAmount) - 1) << (8 - (r->bit % 8) - readAmount);
+
+        *buffer <<= readAmount;
+        *buffer |= (r->bytes[r->bit / 8] & mask) >> (8 - (r->bit % 8) - readAmount);
+
+        amount -= readAmount;
+        r->bit += readAmount;
+    }
+
+    return true;
+}
+
+static inline bool readBitsU64(BitReader* r, uint64_t* buffer, int8_t amount) {
     while (amount > 0) {
         uint8_t readAmount = minU8(amount, 8 - (r->bit % 8));
         uint8_t mask = ((1 << readAmount) - 1) << (8 - (r->bit % 8) - readAmount);
