@@ -16,8 +16,9 @@ int main(int argc, char* argv[]) {
     if (window == NULL) return -1;
 
     // Load font a▩☕
-    PCF_CharacterAtlas atlas = loadFilePCF("unifont.pcf", NULL);
-    gridFromPCF(&atlas, window, true, 0, 0, 1);
+    PCF_CharacterAtlas atlas = loadFilePCF("unifont.pcf", U"a▩☕");
+    AtlasPIGrid atlasGrid = gridFromPCF(&atlas, window, true, 0, 0, 1);
+    AtlasPIGridRenderer renderer = setupAtlasPIGridRenderer(&atlasGrid, window);
     if (atlas.images == NULL) {return -1;}
 
     // HACK quit window
@@ -36,7 +37,7 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        // TODO render grid
+        if (!renderAtlasPIGridRenderer(&renderer, window)) return 1;
 
         SDL_GL_SwapWindow(window->window);
     }

@@ -496,7 +496,7 @@ static bool readBitmapGlyph(FILE* file, uint32_t i, PCF_MetricList* metricList, 
         for (uint16_t j = 0; j < info.sizeAmount; j++) {
             // search for index
             if (info.w[j] == width && info.h[j] == height) {
-                pushBits(writer, j, __builtin_stdc_bit_width((uint8_t)(info.sizeAmount-1)));
+                pushBits(writer, j, __builtin_stdc_bit_width((uint8_t)(info.sizeAmount - 1)));
                 break;
             }
         }

@@ -11,13 +11,14 @@
 #define DEBUG_PCF__METR      false
 #define DEBUG_PCF__ENCO      false
 #define DEBUG_PCF__BITM      false
-#define DEBUG_PCF__BITM_MAIN false
+#define DEBUG_PCF__BITM_MAIN true
 #define DEBUG_PCF__BITM_GLYF false
 #define DEBUG_PCF__BITM_INFO false
 #define DEBUG_IMGE           false
 #define DEBUG_IMGE_GRID      false
 #define DEBUG_IMGE_GRID_PITR false
-#define DEBUG_IMGE_GRID_REND true
+#define DEBUG_IMGE_GRID_SETP false
+#define DEBUG_IMGE_GRID_REND false
 #define DEBUG_TXT            false
 
 static inline uint32_t gcdU32 (uint32_t a, uint32_t b) { // Euclidian algorithm

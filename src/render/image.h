@@ -2,11 +2,16 @@
 
 #define IRON_RENDER_IMAGE
 
+#include <glad/gl.h>
+#include <SDL3/SDL.h>
+
 #include "window.h"
+#include "./renderBasic.h"
 #include "../basic.h"
+#include "../filetypes/txt.h"
 
 typedef struct AtlasPackedImages {
-    uint32_t size;
+    uint32_t size; // size of bytes only
     uint32_t options;
     /*
     amount of sizes indexed (n&0xFF)
@@ -49,6 +54,47 @@ typedef struct AtlasPI {
     AtlasPackedImages* packedImages;
 } AtlasPI;
 
+typedef struct Grid {
+    uint16_t width;
+    uint16_t height;
+    uint16_t cellWidth;
+    uint16_t cellHeight;
+    uint16_t x;
+    uint16_t y;
+    uint32_t cells[];
+} Grid;
+
+typedef struct CellWide {
+    uint32_t index;
+    uint16_t partX;
+    uint16_t partY;
+} CellWide;
+
+typedef struct WideGrid {
+    uint16_t width;
+    uint16_t height;
+    uint16_t cellWidth;
+    uint16_t cellHeight;
+    uint16_t x;
+    uint16_t y;
+    CellWide cells[];
+} WideGrid;
+
+typedef struct CellShift {
+    uint32_t index;
+    uint32_t shift;
+} CellShift;
+
+typedef struct ShiftGrid {
+    uint16_t width;
+    uint16_t height;
+    uint16_t cellWidth;
+    uint16_t cellHeight;
+    uint16_t x;
+    uint16_t y;
+    CellShift cells[];
+} ShiftGrid;
+
 typedef struct CellWideShift {
     uint32_t index;
     uint32_t shift;
@@ -90,5 +136,7 @@ typedef struct AtlasPIGridRenderer {
 AtlasPIGrid atlasPIGridFrom(AtlasPI* atlas, IronWindow* window, bool shift, uint32_t width, uint32_t height, uint16_t scale);
 
 AtlasPIGridRenderer setupAtlasPIGridRenderer(AtlasPIGrid* atlasGrid, IronWindow* window);
+
+bool renderAtlasPIGridRenderer(AtlasPIGridRenderer* renderer, IronWindow* window);
 
 #endif
