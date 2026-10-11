@@ -4,6 +4,8 @@
 // BUG for bugs
 // HACK for things I "hacked" together
 
+// TODO make all functions with failstates return bool and set to buffers instead of returning an arbitrary error value
+
 int main(int argc, char* argv[]) {
     printf("confirm printing\n");
     SDL_Init(SDL_INIT_VIDEO);
@@ -16,10 +18,21 @@ int main(int argc, char* argv[]) {
     if (window == NULL) return -1;
 
     // Load font a▩☕
-    PCF_CharacterAtlas atlas = loadFilePCF("unifont.pcf", U"a▩☕");
+    PCF_CharacterAtlas atlas = loadFilePCF("resources/unifont.pcf", NULL);
     AtlasPIGrid atlasGrid = gridFromPCF(&atlas, window, true, 0, 0, 1);
     AtlasPIGridRenderer renderer = setupAtlasPIGridRenderer(&atlasGrid, window);
     if (atlas.images == NULL) {return -1;}
+
+    // make ui
+    uiGrid uiSpec = uiGridFromText(U" ", U"┌┬┐├┼┤└┴┘", U"╵╶└╷│┌├╴┘─┴┐┤┬┼"); //U"┌─┐│ │└─┘"
+    IronUI* ui = makeUI();
+
+    UIid id1 = makeBackgroundElement(&ui, 0);
+    UIid id2 = makeRectElement(&ui, 0, 1, 1, 9, 9);
+
+    printUI(ui);
+
+    insertUI(&renderer, ui, uiSpec);
 
     // HACK quit window
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);

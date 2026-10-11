@@ -4,5 +4,6 @@
 
 #include "window.h"
 #include "image.h"
+#include "grid.h"
 
 #endif

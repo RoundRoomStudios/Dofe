@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <uchar.h>
 
 #define DEBUG                false
 #define DEBUG_PCF            false
@@ -11,7 +12,7 @@
 #define DEBUG_PCF__METR      false
 #define DEBUG_PCF__ENCO      false
 #define DEBUG_PCF__BITM      false
-#define DEBUG_PCF__BITM_MAIN true
+#define DEBUG_PCF__BITM_MAIN false
 #define DEBUG_PCF__BITM_GLYF false
 #define DEBUG_PCF__BITM_INFO false
 #define DEBUG_IMGE           false
@@ -21,7 +22,7 @@
 #define DEBUG_IMGE_GRID_REND false
 #define DEBUG_TXT            false
 
-static inline uint32_t gcdU32 (uint32_t a, uint32_t b) { // Euclidian algorithm
+static inline uint32_t gcdU32(uint32_t a, uint32_t b) { // Euclidian algorithm
     if (a < b) {uint32_t t = a; a = b; b = t;} // switch to make a larger
     while (true) {
         if (a % b == 0) return b;
@@ -220,6 +221,14 @@ static inline bool readBitsU64(BitReader* r, uint64_t* buffer, int8_t amount) {
     }
 
     return true;
+}
+
+static inline uint32_t char32Length(char32_t* string) {
+    if (string == NULL) return 0;
+    uint32_t l = 0;
+    while (string[l] != 0)
+        l++;
+    return l;
 }
 
 #endif

@@ -12,5 +12,6 @@
 #include "general/general.h"
 #include "filetypes/filetypes.h"
 #include "render/render.h"
+#include "ui/ui.h"
 
 #endif

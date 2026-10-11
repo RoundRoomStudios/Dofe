@@ -10,6 +10,7 @@
 #include "../basic.h"
 
 #include "../render/image.h"
+#include "../render/grid.h"
 
 typedef struct PCF_Encoding {
     uint16_t codepoint;

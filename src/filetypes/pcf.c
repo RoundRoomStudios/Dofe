@@ -673,7 +673,7 @@ PCF_CharacterAtlas loadFilePCF(char* fileName, char32_t* include) { // Error TAG
     PCF_MetricList* metricList = readMetricsPCF(file, tables, encodingList);
     if (metricList == NULL) return nullAtlas;
 
-    PCF_CharacterAtlas atlas = readBitmapsPCF(file, tables, metricList, encodingList);
+    PCF_CharacterAtlas atlas = readBitmapsPCF(file, tables, metricList, encodingList); // TODO sort pointer list (if unsorted)
     if (atlas.images == NULL) return nullAtlas;
 
     //cleanup
